@@ -19,6 +19,6 @@ namespace dae
 		ID3DX11Effect* m_pEffect{};
 		ID3DX11EffectTechnique* m_pTechnique{};
 
-		ID3DX11Effect* LoadEffect(ID3D11Device* pDevice, const std::wstring& assetFile);
+		static ID3DX11Effect* LoadEffect(ID3D11Device* pDevice, const std::wstring& assetFile);
 	};
 }
