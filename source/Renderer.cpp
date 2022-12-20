@@ -2,8 +2,8 @@
 #include "Renderer.h"
 
 #include "Mesh.h"
-
-#define SAFE_RELEASE(ptr) {if(ptr){ptr->Release(); ptr = nullptr;}}
+#include "HelperFuncts.h"
+#include "Utils.h"
 
 namespace dae {
 
@@ -25,15 +25,23 @@ namespace dae {
 			std::cout << "DirectX initialization failed!\n";
 		}
 
+		// Camera
+		m_Camera.Initialize(45.f,{0.f,0.f,-50.f});
+
 		// Create some date for our mesh
-		std::vector<Vertex> vertices
+		/*std::vector<Vertex> vertices
 		{
-			{ { 0.0f, 0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f } },
-			{ { 0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } },
-			{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f } }
+			{ { 0.0f, 3.f, 2.f }, { 1.0f, 0.0f, 0.0f } },
+			{ { 3.f, -3.f, 2.f }, { 0.0f, 0.0f, 1.0f } },
+			{ { -3.f, -3.f, 2.f }, { 0.0f, 1.0f, 0.0f } }
 		};
 		std::vector<uint32_t> indices{ 0, 1, 2 };
+		
+		m_pMesh = new Mesh{ m_pDevice, vertices, indices };*/
 
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
+		Utils::ParseOBJ("Resources/vehicle.obj", vertices, indices);
 		m_pMesh = new Mesh{ m_pDevice, vertices, indices };
 	}
 
@@ -43,8 +51,7 @@ namespace dae {
 		// | RELEASE RESOURCES IN REVERSE ORDER |
 		// +------------------------------------+
 
-		delete m_pMesh;
-		m_pMesh = nullptr;
+		SAFE_DELETE(m_pMesh);
 
 		SAFE_RELEASE(m_pRenderTargetView);
 		SAFE_RELEASE(m_pRenderTargetBuffer);
@@ -69,7 +76,21 @@ namespace dae {
 
 	void Renderer::Update(const Timer* pTimer)
 	{
+		m_Camera.Update(pTimer);
+		
+		m_pMesh->SetWorldViewProjectionMatrix(m_Camera.CalcAndGetWorldViewProjection());
 
+		const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
+
+		if (pKeyboardState[SDL_SCANCODE_F2])
+		{
+			if (!m_F2Held)
+			{
+				m_pMesh->CycleFilteringMethods();
+			}
+			m_F2Held = true;
+		}
+		else m_F2Held = false;
 	}
 
 
@@ -218,7 +239,7 @@ namespace dae {
 		viewport.TopLeftX = 0;
 		viewport.TopLeftY = 0;
 		viewport.MinDepth = 0;
-		viewport.MaxDepth = 0;
+		viewport.MaxDepth = 1;
 		m_pDeviceContext->RSSetViewports(1, &viewport);
 
 		return S_OK;

@@ -1,11 +1,14 @@
 #include "pch.h"
 #include "Mesh.h"
 #include "Effect.h"
+#include "Texture.h"
+#include "HelperFuncts.h"
 
 namespace dae
 {
 	Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
 		: m_pEffect{ std::make_unique<Effect>( pDevice, L"Resources/PosCol3D.fx" ) }
+		, m_pDiffuseTexture{ std::make_unique<Texture>("Resources/vehicle_diffuse.png", pDevice) }
 	{
 		// Create Vertex Layout
 		static constexpr uint32_t numElements{ 2 };
@@ -16,8 +19,8 @@ namespace dae
 		vertexDesc[0].AlignedByteOffset = 0;
 		vertexDesc[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
-		vertexDesc[1].SemanticName = "COLOR";
-		vertexDesc[1].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		vertexDesc[1].SemanticName = "TEXCOORD";
+		vertexDesc[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 		vertexDesc[1].AlignedByteOffset = 12;
 		vertexDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
@@ -60,14 +63,16 @@ namespace dae
 
 		result = pDevice->CreateBuffer(&bd, &initData, &m_pIndexBuffer);
 		if (FAILED(result)) return;
+		
+		// Texture
+		m_pEffect->SetDiffuseMap(m_pDiffuseTexture.get());
 	}
 
 	Mesh::~Mesh()
 	{
-		if (m_pIndexBuffer) m_pIndexBuffer->Release();
-		if (m_pVertexBuffer) m_pVertexBuffer->Release();
-
-		if (m_pInputLayout) m_pInputLayout->Release();
+		SAFE_RELEASE(m_pIndexBuffer);
+		SAFE_RELEASE(m_pVertexBuffer);
+		SAFE_RELEASE(m_pInputLayout);
 	}
 
 	void Mesh::Render(ID3D11DeviceContext* pDeviceContext) const
@@ -94,5 +99,13 @@ namespace dae
 			m_pEffect->GetTechnique()->GetPassByIndex(p)->Apply(0, pDeviceContext);
 			pDeviceContext->DrawIndexed(m_NumIndices, 0, 0);
 		}
+	}
+	void Mesh::SetWorldViewProjectionMatrix(const Matrix& matrix)
+	{
+		m_pEffect->SetWorldViewProjectionMatrix(matrix);
+	}
+	Effect::FilteringMethod Mesh::CycleFilteringMethods()
+	{
+		return m_pEffect->CycleFilteringMethods();
 	}
 }

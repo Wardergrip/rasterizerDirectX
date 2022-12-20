@@ -1,4 +1,5 @@
 #pragma once
+#include "Camera.h"
 
 struct SDL_Window;
 struct SDL_Surface;
@@ -28,6 +29,11 @@ namespace dae
 		int m_Height{};
 
 		bool m_IsInitialized{ false };
+
+		Camera m_Camera;
+
+		// CycleFilteringMethod
+		bool m_F2Held{ false };
 
 		//DIRECTX
 		HRESULT InitializeDirectX();

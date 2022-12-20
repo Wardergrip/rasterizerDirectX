@@ -1,13 +1,10 @@
 #pragma once
+#include "Effect.h"
+#include "DataTypes.h"
+
 namespace dae
 {
-	class Effect;
-
-	struct Vertex final
-	{
-		Vector3 position;
-		ColorRGB color;
-	};
+	class Texture;
 
 	class Mesh final
 	{
@@ -21,8 +18,14 @@ namespace dae
 
 		void Render(ID3D11DeviceContext* pDeviceContext) const;
 
+		void SetWorldViewProjectionMatrix(const Matrix& matrix);
+
+		// Returns new filtering method
+		Effect::FilteringMethod CycleFilteringMethods();
+
 	private:
 		std::unique_ptr<Effect> m_pEffect{};
+		std::unique_ptr<Texture> m_pDiffuseTexture{};
 
 		ID3D11InputLayout* m_pInputLayout{};
 
