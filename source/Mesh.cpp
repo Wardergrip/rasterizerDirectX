@@ -9,6 +9,10 @@ namespace dae
 	Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
 		: m_pEffect{ std::make_unique<Effect>( pDevice, L"Resources/PosCol3D.fx" ) }
 		, m_pDiffuseTexture{ std::make_unique<Texture>("Resources/vehicle_diffuse.png", pDevice) }
+		, m_pNormalTexture{ std::make_unique<Texture>("Resources/vehicle_normal.png", pDevice) }
+		/*, m_TranslationMatrix{Vector3::UnitX, Vector3::UnitY, Vector3::UnitZ, Vector3::Zero}
+		, m_RotationMatrix{ Vector3::UnitX, Vector3::UnitY, Vector3::UnitZ, Vector3::Zero }
+		, m_ScaleMatrix{ Vector3::UnitX, Vector3::UnitY, Vector3::UnitZ, Vector3::Zero }*/
 	{
 		// Create Vertex Layout
 		static constexpr uint32_t numElements{ 2 };
@@ -100,12 +104,24 @@ namespace dae
 			pDeviceContext->DrawIndexed(m_NumIndices, 0, 0);
 		}
 	}
+	void Mesh::RotateX(float angle)
+	{
+		m_RotationMatrix = Matrix::CreateRotationX(angle) * m_RotationMatrix;
+	}
+	void Mesh::RotateY(float angle)
+	{
+		m_RotationMatrix = Matrix::CreateRotationY(angle) * m_RotationMatrix;
+	}
+	void Mesh::RotateZ(float angle)
+	{
+		m_RotationMatrix = Matrix::CreateRotationZ(angle) * m_RotationMatrix;
+	}
 	void Mesh::SetWorldViewProjectionMatrix(const Matrix& matrix)
 	{
-		m_pEffect->SetWorldViewProjectionMatrix(matrix);
+		m_pEffect->SetWorldViewProjectionMatrix(m_ScaleMatrix * m_RotationMatrix * m_TranslationMatrix * matrix);
 	}
-	Effect::FilteringMethod Mesh::CycleFilteringMethods()
+	void Mesh::CycleFilteringMethods()
 	{
-		return m_pEffect->CycleFilteringMethods();
+		m_pEffect->CycleFilteringMethods();
 	}
 }

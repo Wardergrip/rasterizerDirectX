@@ -18,14 +18,19 @@ namespace dae
 
 		void Render(ID3D11DeviceContext* pDeviceContext) const;
 
+		void RotateX(float angle);
+		void RotateY(float angle);
+		void RotateZ(float angle);
+
 		void SetWorldViewProjectionMatrix(const Matrix& matrix);
 
 		// Returns new filtering method
-		Effect::FilteringMethod CycleFilteringMethods();
+		void CycleFilteringMethods();
 
 	private:
 		std::unique_ptr<Effect> m_pEffect{};
 		std::unique_ptr<Texture> m_pDiffuseTexture{};
+		std::unique_ptr<Texture> m_pNormalTexture{};
 
 		ID3D11InputLayout* m_pInputLayout{};
 
@@ -33,6 +38,14 @@ namespace dae
 
 		uint32_t m_NumIndices{};
 		ID3D11Buffer* m_pIndexBuffer{};
+
+		// WorldOrientation
+		Matrix m_TranslationMatrix{ Vector3::UnitX, Vector3::UnitY, Vector3::UnitZ, Vector3::Zero };
+		Matrix m_RotationMatrix{ Vector3::UnitX, Vector3::UnitY, Vector3::UnitZ, Vector3::Zero };
+		Matrix m_ScaleMatrix{ Vector3::UnitX, Vector3::UnitY, Vector3::UnitZ, Vector3::Zero };
+		/*Matrix m_TranslationMatrix;
+		Matrix m_RotationMatrix;
+		Matrix m_ScaleMatrix;*/
 	};
 }
 

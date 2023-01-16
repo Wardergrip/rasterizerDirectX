@@ -75,7 +75,7 @@ namespace dae
 				origin
 			};
 
-			viewMatrix = invViewMatrix.Inverse();
+			viewMatrix = Matrix::Inverse(invViewMatrix);
 
 			//ViewMatrix => Matrix::CreateLookAtLH(...) [not implemented yet]
 			//DirectX Implementation => https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dxmatrixlookatlh
@@ -87,21 +87,19 @@ namespace dae
 			//DirectX Implementation => https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dxmatrixperspectivefovlh
 		}
 
-		const Matrix& CalcAndGetViewMatrix()
+		const Matrix& GetViewMatrix() const
 		{
-			CalculateViewMatrix();
 			return viewMatrix;
 		}
 
-		const Matrix& CalcAndGetProjectionMatrix()
+		const Matrix& GetProjectionMatrix() const
 		{
-			CalculateProjectionMatrix();
 			return projectionMatrix;
 		}
 
-		const Matrix& CalcAndGetWorldViewProjection()
+		Matrix GetWorldViewProjection() const
 		{
-			return CalcAndGetViewMatrix() * CalcAndGetProjectionMatrix();
+			return GetViewMatrix() * GetProjectionMatrix();
 		}
 
 		void Update(const Timer* pTimer)
