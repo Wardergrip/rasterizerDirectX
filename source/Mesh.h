@@ -29,10 +29,6 @@ namespace dae
 
 	private:
 		std::unique_ptr<Effect> m_pEffect{};
-		std::unique_ptr<Texture> m_pDiffuseTexture{};
-		std::unique_ptr<Texture> m_pNormalTexture{};
-		std::unique_ptr<Texture> m_pSpecularTexture{};
-		std::unique_ptr<Texture> m_pGlossinessTexture{};
 
 		ID3D11InputLayout* m_pInputLayout{};
 
