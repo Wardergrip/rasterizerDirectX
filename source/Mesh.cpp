@@ -1,18 +1,21 @@
 #include "pch.h"
 #include "Mesh.h"
-#include "Effect.h"
 #include "Texture.h"
 #include "HelperFuncts.h"
+#include "Utils.h"
 
 namespace dae
 {
-	Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
-		: m_pEffect{ std::make_unique<Effect>( pDevice, L"Resources/PosCol3D.fx" ) }
-		, m_pDiffuseTexture{ std::make_unique<Texture>("Resources/vehicle_diffuse.png", pDevice) }
-		, m_pNormalTexture{ std::make_unique<Texture>("Resources/vehicle_normal.png", pDevice) }
-		, m_pSpecularTexture{ std::make_unique<Texture>("Resources/vehicle_specular.png", pDevice) }
-		, m_pGlossinessTexture{ std::make_unique<Texture>("Resources/vehicle_gloss.png", pDevice) }
+	Mesh::Mesh(ID3D11Device* pDevice, const std::string& objFilePath, std::unique_ptr<Effect> pEffect)
+		:m_pEffect{ std::move(pEffect) }
 	{
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
+		if (!Utils::ParseOBJ(objFilePath, vertices, indices))
+		{
+			std::cout << "Invalid filepath!\n";
+		}
+
 		// Create Vertex Layout
 		static constexpr uint32_t numElements{ 4 };
 		D3D11_INPUT_ELEMENT_DESC vertexDesc[numElements]{};
@@ -76,12 +79,6 @@ namespace dae
 
 		result = pDevice->CreateBuffer(&bd, &initData, &m_pIndexBuffer);
 		if (FAILED(result)) return;
-		
-		// Textures
-		m_pEffect->SetDiffuseMap(m_pDiffuseTexture.get());
-		m_pEffect->SetNormalMap(m_pNormalTexture.get());
-		m_pEffect->SetSpecularMap(m_pSpecularTexture.get());
-		m_pEffect->SetGlossinessMap(m_pGlossinessTexture.get());
 	}
 
 	Mesh::~Mesh()

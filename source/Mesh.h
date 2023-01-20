@@ -1,5 +1,5 @@
 #pragma once
-#include "Effect.h"
+#include "ShadedEffect.h"
 #include "DataTypes.h"
 
 namespace dae
@@ -9,7 +9,7 @@ namespace dae
 	class Mesh final
 	{
 	public:
-		Mesh(ID3D11Device* pDevice, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
+		Mesh(ID3D11Device* pDevice, const std::string& objFilePath, std::unique_ptr<Effect> pEffect);
 		Mesh(const Mesh& other) = delete;
 		Mesh& operator=(const Mesh& other) = delete;
 		Mesh(Mesh&& other) = delete;

@@ -22,41 +22,11 @@ namespace dae
 			std::wcout << L"m_pMatWorldViewProjVariable not valid!\n";
 		}
 
-		m_pViewInverseVariable = m_pEffect->GetVariableByName("gViewInverseMatrix")->AsMatrix();
-		if (!m_pViewInverseVariable->IsValid())
-		{
-			std::wcout << L"m_pViewInverseVariable not valid!\n";
-		}
-
-		m_pWorldVariable = m_pEffect->GetVariableByName("gWorldMatrix")->AsMatrix();
-		if (!m_pWorldVariable->IsValid())
-		{
-			std::wcout << L"m_pWorldVariable not valid!\n";
-		}
-
 		// ---- MAPS ----
 		m_pDiffuseMapVariable = m_pEffect->GetVariableByName("gDiffuseMap")->AsShaderResource();
 		if (!m_pDiffuseMapVariable->IsValid())
 		{
 			std::wcout << L"m_pDiffuseMapVariable not valid!\n";
-		}
-		
-		m_pNormalMapVariable = m_pEffect->GetVariableByName("gNormalMap")->AsShaderResource();
-		if (!m_pNormalMapVariable->IsValid())
-		{
-			std::wcout << L"m_pNormalMapVariable not valid!\n";
-		}
-
-		m_pSpecularMapVariable = m_pEffect->GetVariableByName("gSpecularMap")->AsShaderResource();
-		if (!m_pSpecularMapVariable->IsValid())
-		{
-			std::wcout << L"m_pSpecularMapVariable not valid!\n";
-		}
-
-		m_pGlossinessMapVariable = m_pEffect->GetVariableByName("gGlossinessMap")->AsShaderResource();
-		if (!m_pGlossinessMapVariable->IsValid())
-		{
-			std::wcout << L"m_pGlossinessMapVariable not valid!\n";
 		}
 	}
 
@@ -89,12 +59,12 @@ namespace dae
 
 	void Effect::SetWorldMatrix(const Matrix& matrix)
 	{
-		m_pWorldVariable->SetMatrix(reinterpret_cast<const float*>(&matrix));
+		
 	}
 
 	void Effect::SetInverseViewMatrix(const Matrix& matrix)
 	{
-		m_pWorldVariable->SetMatrix(reinterpret_cast<const float*>(&matrix));
+		
 	}
 
 	void Effect::SetDiffuseMap(Texture* pDiffuseTexture)
@@ -102,30 +72,6 @@ namespace dae
 		if (m_pDiffuseMapVariable)
 		{
 			m_pDiffuseMapVariable->SetResource(pDiffuseTexture->GetShaderResourceView());
-		}
-	}
-
-	void Effect::SetNormalMap(Texture* pNormalTexture)
-	{
-		if (m_pNormalMapVariable)
-		{
-			m_pNormalMapVariable->SetResource(pNormalTexture->GetShaderResourceView());
-		}
-	}
-
-	void Effect::SetSpecularMap(Texture* pSpecularTexture)
-	{
-		if (m_pSpecularMapVariable)
-		{
-			m_pSpecularMapVariable->SetResource(pSpecularTexture->GetShaderResourceView());
-		}
-	}
-
-	void Effect::SetGlossinessMap(Texture* pGlossinessTexture)
-	{
-		if (m_pGlossinessMapVariable)
-		{
-			m_pGlossinessMapVariable->SetResource(pGlossinessTexture->GetShaderResourceView());
 		}
 	}
 

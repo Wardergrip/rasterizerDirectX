@@ -5,6 +5,9 @@
 #include "HelperFuncts.h"
 #include "Utils.h"
 
+#include "ShadedEffect.h"
+#include "Texture.h"
+
 namespace dae {
 
 	Renderer::Renderer(SDL_Window* pWindow) :
@@ -39,10 +42,25 @@ namespace dae {
 		
 		m_pMesh = new Mesh{ m_pDevice, vertices, indices };*/
 
-		std::vector<Vertex> vertices;
-		std::vector<uint32_t> indices;
-		Utils::ParseOBJ("Resources/vehicle.obj", vertices, indices);
-		m_pMesh = new Mesh{ m_pDevice, vertices, indices };
+		auto pShadedEffect{ std::make_unique<ShadedEffect>(m_pDevice, L"Resources/PosCol3D.fx") };
+
+		Texture vehicleDiffuseTexture{ "Resources/vehicle_diffuse.png", m_pDevice };
+		Texture vehicleNormalTexture{ "Resources/vehicle_normal.png", m_pDevice };
+		Texture vehicleSpecularTexture{ "Resources/vehicle_specular.png", m_pDevice };
+		Texture vehicleGlossinessTexture{ "Resources/vehicle_gloss.png", m_pDevice };
+		pShadedEffect->SetDiffuseMap(&vehicleDiffuseTexture);
+		pShadedEffect->SetNormalMap(&vehicleNormalTexture);
+		pShadedEffect->SetSpecularMap(&vehicleSpecularTexture);
+		pShadedEffect->SetGlossinessMap(&vehicleGlossinessTexture);
+
+		m_pMeshes.push_back(new Mesh{ m_pDevice, "Resources/vehicle.obj", std::move(pShadedEffect) });
+
+		auto pTransparentEffect{ std::make_unique<Effect>(m_pDevice, L"Resources/Transparent3D.fx") };
+
+		Texture fireDiffuseTexture{ "Resources/fireFX_diffuse.png",m_pDevice };
+		pTransparentEffect->SetDiffuseMap(&fireDiffuseTexture);
+
+		m_pMeshes.push_back(new Mesh{ m_pDevice,"Resources/fireFX.obj",std::move(pTransparentEffect) });
 	}
 
 	Renderer::~Renderer()
@@ -51,7 +69,11 @@ namespace dae {
 		// | RELEASE RESOURCES IN REVERSE ORDER |
 		// +------------------------------------+
 
-		SAFE_DELETE(m_pMesh);
+		for (auto& pMesh : m_pMeshes)
+		{
+			SAFE_DELETE(pMesh);
+		}
+		m_pMeshes.clear();
 
 		SAFE_RELEASE(m_pRenderTargetView);
 		SAFE_RELEASE(m_pRenderTargetBuffer);
@@ -80,8 +102,18 @@ namespace dae {
 		
 
 		constexpr const float rotationSpeed{ 30.f };
-		if (m_EnableRotating) m_pMesh->RotateY(rotationSpeed * TO_RADIANS * pTimer->GetElapsed());
-		m_pMesh->UpdateViewMatrices(m_Camera.GetWorldViewProjection(),m_Camera.GetInverseViewMatrix());
+		if (m_EnableRotating)
+		{
+			for (const auto& pMesh : m_pMeshes)
+			{
+				pMesh->RotateY(rotationSpeed * TO_RADIANS * pTimer->GetElapsed());
+				pMesh->RotateY(rotationSpeed * TO_RADIANS * pTimer->GetElapsed());
+			}
+		}
+		for (const auto& pMesh : m_pMeshes)
+		{
+			pMesh->UpdateViewMatrices(m_Camera.GetWorldViewProjection(), m_Camera.GetInverseViewMatrix());
+		}
 
 		const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
 
@@ -89,7 +121,10 @@ namespace dae {
 		{
 			if (!m_F2Held)
 			{
-				m_pMesh->CycleFilteringMethods();
+				for (const auto& pMesh : m_pMeshes)
+				{
+					pMesh->CycleFilteringMethods();
+				}
 			}
 			m_F2Held = true;
 		}
@@ -119,7 +154,10 @@ namespace dae {
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 		// 2. Set pipeline + Invoke drawcalls (= render)
-		m_pMesh->Render(m_pDeviceContext);
+		for (const auto& pMesh : m_pMeshes)
+		{
+			pMesh->Render(m_pDeviceContext);
+		}
 
 		// 3. Present backbuffer (swap)
 		m_pSwapChain->Present(0, 0);
