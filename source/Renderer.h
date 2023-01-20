@@ -32,8 +32,12 @@ namespace dae
 
 		Camera m_Camera;
 
+		bool m_EnableRotating{ true };
+
 		// CycleFilteringMethod
 		bool m_F2Held{ false };
+		// ToggleRotation
+		bool m_F5Held{ false };
 
 		//DIRECTX
 		HRESULT InitializeDirectX();

@@ -22,27 +22,28 @@ namespace dae
 		ID3DX11Effect* GetEffect() const;
 		ID3DX11EffectTechnique* GetTechnique() const;
 
-		inline void SetWorldViewProjectionMatrix(const Matrix& matrix)
-		{
-			// I know it looks cursed but trust me bro it works
-			/*
-			The last thing you need to do is update the data every frame using the SetMatrix(...) function of the (c++ side) 
-			matrix effect variable, same as you update the vertex buffer etc. Using your camera, you can build the 
-			WorldViewProjection matrix that you then pass to that function.
-			Hint, you’ll have to reinterpret the Matrix data...
-			*/
-			m_pMatWorldViewProjVariable->SetMatrix(reinterpret_cast<const float*>(&matrix));
-		}
+		void SetWorldViewProjectionMatrix(const Matrix& matrix);
+		void SetWorldMatrix(const Matrix& matrix);
+		void SetInverseViewMatrix(const Matrix& matrix);
 
 		void SetDiffuseMap(Texture* pDiffuseTexture);
+		void SetNormalMap(Texture* pNormalTexture);
+		void SetSpecularMap(Texture* pSpecularTexture);
+		void SetGlossinessMap(Texture* pGlossinessTexture);
 
-		// Returns new filtering method
-		FilteringMethod CycleFilteringMethods();
+		void CycleFilteringMethods();
 	private:
 		ID3DX11Effect* m_pEffect{};
 		ID3DX11EffectTechnique* m_pTechnique{};
+
 		ID3DX11EffectMatrixVariable* m_pMatWorldViewProjVariable{};
+		ID3DX11EffectMatrixVariable* m_pViewInverseVariable{};
+		ID3DX11EffectMatrixVariable* m_pWorldVariable{};
+
 		ID3DX11EffectShaderResourceVariable* m_pDiffuseMapVariable{};
+		ID3DX11EffectShaderResourceVariable* m_pNormalMapVariable{};
+		ID3DX11EffectShaderResourceVariable* m_pSpecularMapVariable{};
+		ID3DX11EffectShaderResourceVariable* m_pGlossinessMapVariable{};
 
 		FilteringMethod m_FilteringMethod;
 

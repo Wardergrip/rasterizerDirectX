@@ -22,7 +22,7 @@ namespace dae
 		void RotateY(float angle);
 		void RotateZ(float angle);
 
-		void SetWorldViewProjectionMatrix(const Matrix& matrix);
+		void UpdateViewMatrices(const Matrix& viewProjectionMatrix, const Matrix& inverseViewMatrix);
 
 		// Returns new filtering method
 		void CycleFilteringMethods();
@@ -31,6 +31,8 @@ namespace dae
 		std::unique_ptr<Effect> m_pEffect{};
 		std::unique_ptr<Texture> m_pDiffuseTexture{};
 		std::unique_ptr<Texture> m_pNormalTexture{};
+		std::unique_ptr<Texture> m_pSpecularTexture{};
+		std::unique_ptr<Texture> m_pGlossinessTexture{};
 
 		ID3D11InputLayout* m_pInputLayout{};
 
@@ -43,9 +45,6 @@ namespace dae
 		Matrix m_TranslationMatrix{ Vector3::UnitX, Vector3::UnitY, Vector3::UnitZ, Vector3::Zero };
 		Matrix m_RotationMatrix{ Vector3::UnitX, Vector3::UnitY, Vector3::UnitZ, Vector3::Zero };
 		Matrix m_ScaleMatrix{ Vector3::UnitX, Vector3::UnitY, Vector3::UnitZ, Vector3::Zero };
-		/*Matrix m_TranslationMatrix;
-		Matrix m_RotationMatrix;
-		Matrix m_ScaleMatrix;*/
 	};
 }
 

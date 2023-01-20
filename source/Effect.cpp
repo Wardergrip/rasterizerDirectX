@@ -9,24 +9,54 @@ namespace dae
 		: m_pEffect{ LoadEffect(pDevice, assetFile) }
 	{
 		m_pTechnique = m_pEffect->GetTechniqueByName("PointFilteringTechnique");
-		if (!m_pTechnique->IsValid()) std::wcout << L"Technique not valid\n";
+		if (!m_pTechnique->IsValid())
+		{
+			std::wcout << L"Technique not valid\n";
+		}
+
+		// ---- WORLD ----
 
 		m_pMatWorldViewProjVariable = m_pEffect->GetVariableByName("gWorldViewProj")->AsMatrix();
 		if (!m_pMatWorldViewProjVariable->IsValid())
 		{
 			std::wcout << L"m_pMatWorldViewProjVariable not valid!\n";
-#if defined _DEBUG || defined DEBUG 
-			throw "Invalid matWorldView";
-#endif
 		}
 
+		m_pViewInverseVariable = m_pEffect->GetVariableByName("gViewInverseMatrix")->AsMatrix();
+		if (!m_pViewInverseVariable->IsValid())
+		{
+			std::wcout << L"m_pViewInverseVariable not valid!\n";
+		}
+
+		m_pWorldVariable = m_pEffect->GetVariableByName("gWorldMatrix")->AsMatrix();
+		if (!m_pWorldVariable->IsValid())
+		{
+			std::wcout << L"m_pWorldVariable not valid!\n";
+		}
+
+		// ---- MAPS ----
 		m_pDiffuseMapVariable = m_pEffect->GetVariableByName("gDiffuseMap")->AsShaderResource();
 		if (!m_pDiffuseMapVariable->IsValid())
 		{
-			std::wcout << L"m_pShaderResourceVariable not valid!\n";
-#if defined _DEBUG || defined DEBUG 
-			throw "Invalid shaderResourceView";
-#endif
+			std::wcout << L"m_pDiffuseMapVariable not valid!\n";
+		}
+		
+		m_pNormalMapVariable = m_pEffect->GetVariableByName("gNormalMap")->AsShaderResource();
+		if (!m_pNormalMapVariable->IsValid())
+		{
+			std::wcout << L"m_pNormalMapVariable not valid!\n";
+		}
+
+		m_pSpecularMapVariable = m_pEffect->GetVariableByName("gSpecularMap")->AsShaderResource();
+		if (!m_pSpecularMapVariable->IsValid())
+		{
+			std::wcout << L"m_pSpecularMapVariable not valid!\n";
+		}
+
+		m_pGlossinessMapVariable = m_pEffect->GetVariableByName("gGlossinessMap")->AsShaderResource();
+		if (!m_pGlossinessMapVariable->IsValid())
+		{
+			std::wcout << L"m_pGlossinessMapVariable not valid!\n";
 		}
 	}
 
@@ -45,6 +75,28 @@ namespace dae
 		return m_pTechnique;
 	}
 
+	void Effect::SetWorldViewProjectionMatrix(const Matrix& matrix)
+	{
+		// I know it looks cursed but trust me bro it works
+		/*
+		The last thing you need to do is update the data every frame using the SetMatrix(...) function of the (c++ side)
+		matrix effect variable, same as you update the vertex buffer etc. Using your camera, you can build the
+		WorldViewProjection matrix that you then pass to that function.
+		Hint, you’ll have to reinterpret the Matrix data...
+		*/
+		m_pMatWorldViewProjVariable->SetMatrix(reinterpret_cast<const float*>(&matrix));
+	}
+
+	void Effect::SetWorldMatrix(const Matrix& matrix)
+	{
+		m_pWorldVariable->SetMatrix(reinterpret_cast<const float*>(&matrix));
+	}
+
+	void Effect::SetInverseViewMatrix(const Matrix& matrix)
+	{
+		m_pWorldVariable->SetMatrix(reinterpret_cast<const float*>(&matrix));
+	}
+
 	void Effect::SetDiffuseMap(Texture* pDiffuseTexture)
 	{
 		if (m_pDiffuseMapVariable)
@@ -53,7 +105,31 @@ namespace dae
 		}
 	}
 
-	Effect::FilteringMethod Effect::CycleFilteringMethods()
+	void Effect::SetNormalMap(Texture* pNormalTexture)
+	{
+		if (m_pNormalMapVariable)
+		{
+			m_pNormalMapVariable->SetResource(pNormalTexture->GetShaderResourceView());
+		}
+	}
+
+	void Effect::SetSpecularMap(Texture* pSpecularTexture)
+	{
+		if (m_pSpecularMapVariable)
+		{
+			m_pSpecularMapVariable->SetResource(pSpecularTexture->GetShaderResourceView());
+		}
+	}
+
+	void Effect::SetGlossinessMap(Texture* pGlossinessTexture)
+	{
+		if (m_pGlossinessMapVariable)
+		{
+			m_pGlossinessMapVariable->SetResource(pGlossinessTexture->GetShaderResourceView());
+		}
+	}
+
+	void Effect::CycleFilteringMethods()
 	{
 	
 		m_FilteringMethod = static_cast<FilteringMethod>((static_cast<int>(m_FilteringMethod) + 1) % (static_cast<int>(FilteringMethod::END)));
@@ -77,8 +153,6 @@ namespace dae
 			std::cout << "Anisotropic\n";
 			break;
 		}
-		std::cout << m_pTechnique << '\n';
-		return m_FilteringMethod;
 	}
 
 	ID3DX11Effect* Effect::LoadEffect(ID3D11Device* pDevice, const std::wstring& assetFile)

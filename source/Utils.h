@@ -4,8 +4,8 @@
 #include "Math.h"
 #include "DataTypes.h"
 
-//#define ENABLE_TANGENT
-//#define ENABLE_NORMAL
+#define ENABLE_TANGENT
+#define ENABLE_NORMAL
 
 namespace dae
 {

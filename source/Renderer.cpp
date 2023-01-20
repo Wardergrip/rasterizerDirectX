@@ -26,7 +26,7 @@ namespace dae {
 		}
 
 		// Camera
-		m_Camera.Initialize(45.f,{0.f,0.f,-50.f});
+		m_Camera.Initialize(45.f,{0.f,0.f,-50.f},static_cast<float>(m_Width)/m_Height);
 
 		// Create some date for our mesh
 		/*std::vector<Vertex> vertices
@@ -78,7 +78,10 @@ namespace dae {
 	{
 		m_Camera.Update(pTimer);
 		
-		m_pMesh->SetWorldViewProjectionMatrix(m_Camera.CalcAndGetWorldViewProjection());
+
+		constexpr const float rotationSpeed{ 30.f };
+		if (m_EnableRotating) m_pMesh->RotateY(rotationSpeed * TO_RADIANS * pTimer->GetElapsed());
+		m_pMesh->UpdateViewMatrices(m_Camera.GetWorldViewProjection(),m_Camera.GetInverseViewMatrix());
 
 		const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
 
@@ -91,6 +94,17 @@ namespace dae {
 			m_F2Held = true;
 		}
 		else m_F2Held = false;
+		if (pKeyboardState[SDL_SCANCODE_F5])
+		{
+			if (!m_F5Held)
+			{
+				m_EnableRotating = !m_EnableRotating;
+				std::cout << "[ROT] ";
+				std::cout << (m_EnableRotating ? "Rotation enabled\n" : "Rotation disabled\n");
+			}
+			m_F5Held = true;
+		}
+		else m_F5Held = false;
 	}
 
 

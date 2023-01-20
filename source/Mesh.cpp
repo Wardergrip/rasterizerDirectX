@@ -10,12 +10,11 @@ namespace dae
 		: m_pEffect{ std::make_unique<Effect>( pDevice, L"Resources/PosCol3D.fx" ) }
 		, m_pDiffuseTexture{ std::make_unique<Texture>("Resources/vehicle_diffuse.png", pDevice) }
 		, m_pNormalTexture{ std::make_unique<Texture>("Resources/vehicle_normal.png", pDevice) }
-		/*, m_TranslationMatrix{Vector3::UnitX, Vector3::UnitY, Vector3::UnitZ, Vector3::Zero}
-		, m_RotationMatrix{ Vector3::UnitX, Vector3::UnitY, Vector3::UnitZ, Vector3::Zero }
-		, m_ScaleMatrix{ Vector3::UnitX, Vector3::UnitY, Vector3::UnitZ, Vector3::Zero }*/
+		, m_pSpecularTexture{ std::make_unique<Texture>("Resources/vehicle_specular.png", pDevice) }
+		, m_pGlossinessTexture{ std::make_unique<Texture>("Resources/vehicle_gloss.png", pDevice) }
 	{
 		// Create Vertex Layout
-		static constexpr uint32_t numElements{ 2 };
+		static constexpr uint32_t numElements{ 4 };
 		D3D11_INPUT_ELEMENT_DESC vertexDesc[numElements]{};
 
 		vertexDesc[0].SemanticName = "POSITION";
@@ -27,6 +26,16 @@ namespace dae
 		vertexDesc[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 		vertexDesc[1].AlignedByteOffset = 12;
 		vertexDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+
+		vertexDesc[2].SemanticName = "NORMAL";
+		vertexDesc[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		vertexDesc[2].AlignedByteOffset = 20;
+		vertexDesc[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+
+		vertexDesc[3].SemanticName = "TANGENT";
+		vertexDesc[3].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		vertexDesc[3].AlignedByteOffset = 32;
+		vertexDesc[3].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
 		// Create Input Layout
 		D3DX11_PASS_DESC passDesc{};
@@ -68,8 +77,11 @@ namespace dae
 		result = pDevice->CreateBuffer(&bd, &initData, &m_pIndexBuffer);
 		if (FAILED(result)) return;
 		
-		// Texture
+		// Textures
 		m_pEffect->SetDiffuseMap(m_pDiffuseTexture.get());
+		m_pEffect->SetNormalMap(m_pNormalTexture.get());
+		m_pEffect->SetSpecularMap(m_pSpecularTexture.get());
+		m_pEffect->SetGlossinessMap(m_pGlossinessTexture.get());
 	}
 
 	Mesh::~Mesh()
@@ -116,9 +128,12 @@ namespace dae
 	{
 		m_RotationMatrix = Matrix::CreateRotationZ(angle) * m_RotationMatrix;
 	}
-	void Mesh::SetWorldViewProjectionMatrix(const Matrix& matrix)
+	void Mesh::UpdateViewMatrices(const Matrix& viewProjectionMatrix, const Matrix& inverseViewMatrix)
 	{
-		m_pEffect->SetWorldViewProjectionMatrix(m_ScaleMatrix * m_RotationMatrix * m_TranslationMatrix * matrix);
+		Matrix world{ m_ScaleMatrix * m_RotationMatrix * m_TranslationMatrix };
+		m_pEffect->SetWorldViewProjectionMatrix(world * viewProjectionMatrix);
+		m_pEffect->SetInverseViewMatrix(inverseViewMatrix);
+		m_pEffect->SetWorldMatrix(world);
 	}
 	void Mesh::CycleFilteringMethods()
 	{

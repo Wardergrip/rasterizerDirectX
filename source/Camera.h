@@ -92,6 +92,11 @@ namespace dae
 			return viewMatrix;
 		}
 
+		const Matrix& GetInverseViewMatrix() const
+		{
+			return invViewMatrix;
+		}
+
 		const Matrix& GetProjectionMatrix() const
 		{
 			return projectionMatrix;
